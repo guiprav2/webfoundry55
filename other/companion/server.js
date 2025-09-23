@@ -18,6 +18,9 @@ export default function server(key, opt = {}) {
         }
       });
     },
+    broadcast: data => {
+      for (let x of ret.clients) x.send(JSON.stringify(data));
+    },
   };
 
   let wss = new WebSocket.WebSocketServer({ port: opt.port });

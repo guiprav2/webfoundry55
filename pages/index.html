@@ -2540,6 +2540,7 @@
                 href="#"
                 class="ProjectsPanel-project flex items-center gap-3 rounded outline-none py-1 justify-between px-2"
                 wf-map="x of state.projects.list"
+                wf-disabled="loadman.busy()"
                 wf-onclick="post('projects.select', x)"
                 wf-class="{{state.projects.current === x &amp;&amp; 'bg-black/50'}}"
               >
@@ -2707,6 +2708,7 @@
                   <input
                     class="flex-1 bg-black/50 outline-none rounded-md px-4 py-2 min-w-0"
                     value="{{state.projects.currentProject.title}}"
+                    wf-disabled="loadman.busy()"
                     wf-onkeyup="event.preventDefault(), post('project.titleKeyDown')"
                   />
                 </div>
@@ -2718,6 +2720,7 @@
                   <input
                     class="flex-1 bg-black/50 outline-none rounded-md px-4 py-2 min-w-0"
                     value=""
+                    wf-disabled="loadman.busy()"
                     wf-onkeyup="event.preventDefault(), post('app.projectTitleKeyDown')"
                   />
                 </div>
@@ -2732,8 +2735,9 @@
                     <input
                       type="checkbox"
                       class="peer hidden"
-                      wf-checked="state.projects.currentProject.options?.nerdfonts"
-                      wf-onclick="event.preventDefault(), post('settings.toggleOption', 'nerdfonts')"
+                      wf-disabled="loadman.busy()"
+                      wf-checked="state.settings.popt.nerdfonts"
+                      wf-onclick="event.preventDefault(), post('settings.projectOption', 'nerdfonts')"
                     />
                     <div
                       class="w-11 h-6 rounded-full peer-checked:bg-green-500 bg-black/50"
@@ -2741,27 +2745,10 @@
                     <div
                       class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-5"
                     ></div>
-                  </div> </label
-                ><label
-                  class="w-full text-left px-3 py-2 flex justify-between items-center rounded hover:bg-black/50 outline-none cursor-pointer"
-                  wf-if="state.projects.current"
-                >
-                  <div class="shrink-0">Enable multiframework</div>
-                  <div class="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      class="peer hidden"
-                      wf-checked="state.projects.currentProject.options?.multiframework"
-                      wf-onclick="event.preventDefault(), post('settings.toggleMultiframework')"
-                    />
-                    <div
-                      class="w-11 h-6 rounded-full peer-checked:bg-green-500 bg-black/50"
-                    ></div>
-                    <div
-                      class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-5"
-                    ></div>
-                  </div> </label
-                ><label
+                  </div>
+                </label>
+
+                <label
                   class="w-full text-left px-3 py-2 flex justify-between items-center rounded hover:bg-black/50 outline-none cursor-pointer"
                   wf-if="state.projects.current"
                 >
@@ -2770,8 +2757,9 @@
                     <input
                       type="checkbox"
                       class="peer hidden"
-                      wf-checked="state.projects.currentProject.options?.tailwind"
-                      wf-onclick="event.preventDefault(), post('settings.toggleFramework', 'tailwind')"
+                      wf-disabled="loadman.busy()"
+                      wf-checked="state.settings.popt.tailwind"
+                      wf-onclick="event.preventDefault(), post('settings.projectOption', 'tailwind')"
                     />
                     <div
                       class="w-11 h-6 rounded-full peer-checked:bg-green-500 bg-black/50"
@@ -2779,46 +2767,10 @@
                     <div
                       class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-5"
                     ></div>
-                  </div> </label
-                ><label
-                  class="w-full text-left px-3 py-2 flex justify-between items-center rounded hover:bg-black/50 outline-none cursor-pointer"
-                  wf-if="state.projects.current"
-                >
-                  <div class="shrink-0">Enable Bootstrap</div>
-                  <div class="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      class="peer hidden"
-                      wf-checked="state.projects.currentProject.options?.bootstrap"
-                      wf-onclick="event.preventDefault(), post('settings.toggleFramework', 'bootstrap')"
-                    />
-                    <div
-                      class="w-11 h-6 rounded-full peer-checked:bg-green-500 bg-black/50"
-                    ></div>
-                    <div
-                      class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-5"
-                    ></div>
-                  </div> </label
-                ><label
-                  class="w-full text-left px-3 py-2 flex justify-between items-center rounded hover:bg-black/50 outline-none cursor-pointer"
-                  wf-if="state.projects.current"
-                >
-                  <div class="shrink-0">Enable Bulma</div>
-                  <div class="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      class="peer hidden"
-                      wf-checked="state.projects.currentProject.options?.bulma"
-                      wf-onclick="event.preventDefault(), post('settings.toggleFramework', 'bulma')"
-                    />
-                    <div
-                      class="w-11 h-6 rounded-full peer-checked:bg-green-500 bg-black/50"
-                    ></div>
-                    <div
-                      class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-5"
-                    ></div>
-                  </div> </label
-                ><label
+                  </div>
+                </label>
+
+                <label
                   class="w-full text-left px-3 py-2 flex justify-between items-center rounded hover:bg-black/50 outline-none cursor-pointer"
                   wf-if="state.projects.current"
                 >
@@ -2827,8 +2779,9 @@
                     <input
                       type="checkbox"
                       class="peer hidden"
-                      wf-checked="state.projects.currentProject.options?.betterscroll"
-                      wf-onclick="event.preventDefault(), post('settings.toggleOption', 'betterscroll')"
+                      wf-disabled="loadman.busy()"
+                      wf-checked="state.settings.popt.betterscroll"
+                      wf-onclick="event.preventDefault(), post('settings.projectOption', 'betterscroll')"
                     />
                     <div
                       class="w-11 h-6 rounded-full peer-checked:bg-green-500 bg-black/50"
@@ -2836,8 +2789,10 @@
                     <div
                       class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-5"
                     ></div>
-                  </div> </label
-                ><label
+                  </div>
+                </label>
+
+                <label
                   class="w-full text-left px-3 py-2 flex justify-between items-center rounded hover:bg-black/50 outline-none cursor-pointer"
                 >
                   <div class="shrink-0">Hide toolbar</div>
@@ -2845,8 +2800,9 @@
                     <input
                       type="checkbox"
                       class="peer hidden"
-                      wf-checked="!state.settings.options?.toolbar"
-                      wf-onclick="event.preventDefault(), post('settings.toggleGlobal', 'toolbar')"
+                      wf-disabled="loadman.busy()"
+                      wf-checked="!state.settings.opt.toolbar"
+                      wf-onclick="event.preventDefault(), post('settings.option', 'toolbar')"
                     />
                     <div
                       class="w-11 h-6 rounded-full peer-checked:bg-green-500 bg-black/50"
@@ -2854,8 +2810,10 @@
                     <div
                       class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-5"
                     ></div>
-                  </div> </label
-                ><label
+                  </div>
+                </label>
+
+                <label
                   class="w-full text-left px-3 py-2 flex justify-between items-center rounded hover:bg-black/50 outline-none cursor-pointer"
                 >
                   <div class="shrink-0">Restrict file moving</div>
@@ -2865,8 +2823,9 @@
                     <input
                       type="checkbox"
                       class="peer hidden"
-                      wf-checked="state.settings.options?.mvRestricted"
-                      wf-onclick="event.preventDefault(), post('settings.toggleGlobal', 'mvRestricted')"
+                      wf-disabled="loadman.busy()"
+                      wf-checked="state.settings.opt.mvRestricted"
+                      wf-onclick="event.preventDefault(), post('settings.option', 'mvRestricted')"
                     />
                     <div
                       class="w-11 h-6 rounded-full peer-checked:bg-green-500 bg-black/50"
@@ -2874,8 +2833,10 @@
                     <div
                       class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-5"
                     ></div>
-                  </label> </label
-                ><label
+                  </label>
+                </label>
+
+                <label
                   class="w-full text-left px-3 py-2 flex justify-between items-center rounded hover:bg-black/50 outline-none cursor-pointer SettingsPanel-companionBtn"
                 >
                   <div class="shrink-0">Enable Companion</div>
@@ -2883,8 +2844,9 @@
                     <input
                       type="checkbox"
                       class="peer hidden"
-                      wf-checked="(state.settings.options?.companion)"
-                      wf-onclick="event.preventDefault(), event.stopPropagation(), post('settings.toggleGlobal', 'companion')"
+                      wf-disabled="loadman.busy()"
+                      wf-checked="(state.settings.opt.companion)"
+                      wf-onclick="event.preventDefault(), event.stopPropagation(), post('settings.option', 'companion')"
                     />
                     <div
                       class="w-11 h-6 rounded-full peer-checked:bg-green-500 bg-black/50"
@@ -2904,8 +2866,9 @@
                     <input
                       type="checkbox"
                       class="peer hidden"
-                      wf-checked="state.projects.currentProject.options?.cfs"
-                      wf-onclick="event.preventDefault(), post('settings.toggleOption', 'cfs')"
+                      wf-disabled="loadman.busy()"
+                      wf-checked="state.settings.popt.storage === 'cfs'"
+                      wf-onclick="event.preventDefault(), post('settings.projectOption', 'storage', state.settings.popt.storage === 'cfs' ? 'local' : 'cfs')"
                     />
                     <div
                       class="w-11 h-6 rounded-full peer-checked:bg-green-500 bg-black/50"
@@ -2913,44 +2876,10 @@
                     <div
                       class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-5"
                     ></div>
-                  </div> </label
-                ><label
-                  class="w-full text-left px-3 py-2 flex justify-between items-center rounded hover:bg-black/50 outline-none cursor-pointer"
-                >
-                  <div class="shrink-0">New shell on open project</div>
-                  <div class="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      class="peer hidden"
-                      wf-checked="state.settings.options?.newShellOpenProject"
-                      wf-onclick="event.preventDefault(), post('settings.toggleGlobal', 'newShellOpenProject')"
-                    />
-                    <div
-                      class="w-11 h-6 rounded-full peer-checked:bg-green-500 bg-black/50"
-                    ></div>
-                    <div
-                      class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-5"
-                    ></div>
-                  </div> </label
-                ><label
-                  class="w-full text-left px-3 py-2 flex justify-between items-center rounded hover:bg-black/50 outline-none cursor-pointer"
-                >
-                  <div class="shrink-0">Enable Prettier</div>
-                  <div class="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      class="peer hidden"
-                      wf-checked="state.settings.options?.prettier"
-                      wf-onclick="event.preventDefault(), post('settings.toggleGlobal', 'prettier')"
-                    />
-                    <div
-                      class="w-11 h-6 rounded-full peer-checked:bg-green-500 bg-black/50"
-                    ></div>
-                    <div
-                      class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-5"
-                    ></div>
-                  </div> </label
-                ><label
+                  </div>
+                </label>
+
+                <label
                   class="w-full text-left px-3 py-2 flex justify-between items-center rounded hover:bg-black/50 outline-none cursor-pointer"
                   wf-if="state.projects.current"
                 >
@@ -2959,8 +2888,9 @@
                     <input
                       type="checkbox"
                       class="peer hidden"
-                      wf-checked="state.projects.currentProject.options?.peacock"
-                      wf-onclick="event.preventDefault(), post('settings.toggleOption', 'peacock')"
+                      wf-disabled="loadman.busy()"
+                      wf-checked="state.settings.popt.peacock"
+                      wf-onclick="event.preventDefault(), post('settings.projectOption', 'peacock')"
                     />
                     <div
                       class="w-11 h-6 rounded-full peer-checked:bg-green-500 bg-black/50"
@@ -2968,14 +2898,17 @@
                     <div
                       class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-5"
                     ></div>
-                  </div> </label
-                ><button
+                  </div>
+                </label>
+
+                <button
                   class="w-full text-left px-3 py-2 flex justify-between items-center rounded hover:bg-black/50 outline-none"
                   wf-onclick="post('companion.copyKey', event)"
-                  wf-if="state.settings.options?.companion"
+                  wf-if="state.settings.opt.companion"
                 >
-                  <div>Copy companion key</div></button
-                ><button
+                  <div>Copy companion key</div>
+                </button>
+                <button
                   class="w-full text-left px-3 py-2 flex justify-between items-center rounded hover:bg-black/50 outline-none disabled:opacity-50"
                   wf-if="!state.assistant.session"
                   wf-onclick="event.preventDefault(), post('assistant.start')"
@@ -2997,6 +2930,7 @@
                   <div>Disable assistant</div></button
                 ><button
                   class="w-full text-left px-3 py-2 flex justify-between items-center rounded hover:bg-black/50 outline-none"
+                  wf-disabled="loadman.busy()"
                   wf-onclick="event.preventDefault(), post('files.importZip')"
                   wf-if="state.projects.current"
                 >
@@ -3005,6 +2939,7 @@
 
                 <button
                   class="w-full text-left px-3 py-2 flex justify-between items-center rounded hover:bg-black/50 outline-none"
+                  wf-disabled="loadman.busy()"
                   wf-onclick="event.preventDefault(), post('files.exportZip')"
                   wf-if="state.projects.current"
                 >
@@ -3013,6 +2948,7 @@
 
                 <button
                   class="w-full text-left px-3 py-2 flex justify-between items-center rounded hover:bg-black/50 outline-none"
+                  wf-disabled="loadman.busy()"
                   wf-onclick="event.preventDefault(), post('files.deploy')"
                   wf-if="state.projects.current"
                 >
@@ -3033,7 +2969,7 @@
             </div>
 
             <div
-              class="flex flex-1 min-w-96 Designer"
+              class="flex flex-1 min-w-96 hidden Designer"
               wf-class="{{!state.designer.target(state.files.current) &amp;&amp; 'hidden'}}"
             >
               <div class="Designer-leftPadder flex-1"></div>

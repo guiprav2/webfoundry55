@@ -1,4 +1,3 @@
-import './loadman.js';
 import { lookup as mimeLookup } from 'https://cdn.skypack.dev/mrmime';
 
 window.tap = x => (console.log(x), x);
@@ -15,7 +14,19 @@ export function debounce(func, delay) {
   let timeoutId;
   return function (...args) {
     clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => func.apply(this, args), delay);
+    if (func.constructor.name === 'AsyncFunction') {
+      let pending = [];
+      return new Promise((resolve, reject) => {
+        pending.push({ resolve, reject });
+        timeoutId = setTimeout(() => {
+          func.apply(this, args)
+            .then((result) => { pending.forEach(p => p.resolve(result)); pending = [] })
+            .catch((err) => { pending.forEach(p => p.reject(err)); pending = [] });
+        }, delay);
+      });
+    } else {
+      timeoutId = setTimeout(() => func.apply(this, args), delay);
+    }
   };
 }
 

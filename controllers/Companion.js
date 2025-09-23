@@ -50,11 +50,11 @@ export default class Companion {
     },
 
     message: ev => {
-      if (ev.type !== 'rpc:response') return state.event.bus.emit('companion:message', ev);
+      if (ev.type !== 'rpc:response') return state.event.bus.emit(`companion:${ev.type}`, ev);
       if (!this.state.rpcs[ev.rpcid]) throw new Error(`Unknown RPCID: ${ev.rpcid}`);
       let rpc = this.state.rpcs[ev.rpcid];
       delete this.state.rpcs[ev.rpcid];
-      if (ev.err) return rpc.prej(new Error(ev.err));
+      if (ev.error) return rpc.prej(new Error(ev.error));
       rpc.pres(ev.data);
     },
   };

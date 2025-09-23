@@ -1,3 +1,4 @@
+import rfiles from '../repos/rfiles.js';
 import rprojects from '../repos/rprojects.js';
 
 export default class Projects {
@@ -34,6 +35,7 @@ export default class Projects {
         opt.betterscroll ??= true;
         state.projects.list.push(project); // needed by rprojects.config
         await rprojects.config(project, opt);
+        await Promise.all(['controllers', 'components', 'media', 'pages'].map(async x => await rfiles.save(project, `${x}/.keep`, new Blob([''], { type: 'text/plain' }))));
         bus.emit('projects:create:ready', { project });
       });
     },

@@ -1,11 +1,14 @@
 #!/usr/bin/env node
+import chokidar from 'chokidar';
 import dotenv from 'dotenv';
 import fs, { promises as fsp } from 'fs';
 import getpass from './getpass.js';
 import path from 'path';
 import readline from 'readline';
 import server from './server.js';
+import { glob } from 'glob';
 import { mkdirp } from 'mkdirp';
+import { rimraf } from 'rimraf';
 
 let configDir = `${process.env.HOME}/.webfoundry`;
 mkdirp.sync(configDir);
@@ -43,21 +46,31 @@ let s = server(process.env.WF_CLIENT_KEY);
 s.events.on('connected', () => console.log('Client connected (handshake OK).'));
 s.events.on('disconnected', () => console.log('Client disconnected.'));
 
-s.rpc('files:save', async ({ path, data }) => {
-  console.log('files.save', path);
+s.rpc('files:list', async ({ path }) => (await glob(`${path}/**/*`, { nodir: true, dot: true })));
+
+s.rpc('files:stat', async ({ path }) => {
+  try { return await fsp.stat(path) }
+  catch (err) { if (err.code === 'ENOENT') return null; throw err }
 });
 
 s.rpc('files:load', async ({ path }) => {
-  console.log('files.load', path);
+  try { return (await fsp.readFile(path)).toString('base64') }
+  catch (err) { if (err.code === 'ENOENT') return null; throw err }
 });
 
-s.rpc('files:mv', async ({ path, newPath }) => {
-  console.log('files.mv', path, newPath);
+s.rpc('files:save', async ({ path, data }) => {
+  await mkdirp(path.split('/').slice(0, -1).join('/'));
+  await fsp.writeFile(path, Buffer.from(data, 'base64'));
 });
 
-s.rpc('files:rm', async ({ path }) => {
-  console.log('files.rm', path);
-});
+s.rpc('files:mv', async ({ path, newPath }) => await fsp.rename(path, newPath));
+s.rpc('files:rm', async ({ path }) => await rimraf(path));
+
+let watcher = chokidar.watch(workspace, { ignoreInitial: true, ignored: /^node_modules\/|\/\.git\/|\.swp$/ });
+['add', 'change', 'unlink'].forEach(x => watcher.on(x, path => s.broadcast({
+  type: `files:${{ add: 'save', change: 'save', unlink: 'rm'}[x]}`,
+  path: path.slice(workspace.length + 1),
+})));
 
 console.log('Webfoundry Companion listening on ws://localhost:8845/');
 console.log(`Current workspace: ${workspace}`);

@@ -24,7 +24,7 @@ class ProjectsRepository {
   }
 
   async config(project, opt) {
-    if (!opt) return await rfiles.load(project, 'wf.uiconfig.json');
+    if (!opt) { let blob = await rfiles.load(project, 'wf.uiconfig.json'); return blob ? JSON.parse(await blob.text()) : {} }
     await rfiles.save(project, 'wf.uiconfig.json', new Blob([JSON.stringify(opt, null, 2)], { type: 'application/json' }));
   }
 
@@ -47,7 +47,7 @@ class ProjectsRepository {
       default: throw new Error(`Unknown project storage: ${storage}`);
     }
     localStorage.removeItem(`webfoundry:projects:link:${name}`);
-    localStorage.removeItem(`webfoundry:projects:storage:${name}`);
+    localStorage.removeItem(`webfoundry:projects:storage:${uuid}`);
   }
 }
 
