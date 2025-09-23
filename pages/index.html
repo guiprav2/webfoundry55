@@ -2532,17 +2532,14 @@
             <div
               class="ProjectsPanel-projectList flex flex-col gap-2 p-4 overflow-auto min-h-0 basis-0 flex-1"
             >
-              <div
-                class="italic mb-1"
-                wf-if="!Object.keys(state.projects.names).length"
-              >
+              <div class="italic mb-1" wf-if="!state.projects.list.length">
                 Click the button above to create your first project.
               </div>
 
               <a
                 href="#"
                 class="ProjectsPanel-project flex items-center gap-3 rounded outline-none py-1 justify-between px-2"
-                wf-map="x of Object.keys(state.projects.names)"
+                wf-map="x of state.projects.list"
                 wf-onclick="post('projects.select', x)"
                 wf-class="{{state.projects.current === x &amp;&amp; 'bg-black/50'}}"
               >
@@ -2550,7 +2547,9 @@
                   <div>
                     <div class="nf nf-fa-sitemap p-2"></div>
                   </div>
-                  <div class="ProjectsPanel-projectName">{{x}}</div>
+                  <div class="ProjectsPanel-projectName">
+                    {{x.split(':')[0]}}
+                  </div>
                 </div>
                 <div class="flex">
                   <button
@@ -2580,10 +2579,11 @@
             >
               <div
                 class="italic mb-1"
-                wf-if="loadman.ops['files.load']?.length"
+                wf-if="!state.files.list.length &amp;&amp; loadman.ops['files.load']?.length"
               >
                 Loading files, please wait...
               </div>
+
               <a
                 href="#"
                 class="FilesPanel-file flex items-center gap-3 rounded outline-none py-1 justify-between px-2 ml-[0rem]"

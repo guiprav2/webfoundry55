@@ -1,0 +1,15 @@
+{
+  "type": "module",
+  "scripts": {
+    "clear": "rm *.zip",
+    "test": "npx playwright test",
+    "zip": "zip -r webfoundry5.zip . -x \"./.git/*\" \"./gitignore\" \"./package*\" .\"/node_modules/*\" \"./playwright.config.js\" \"./spec/*\" \"./test-results/*\" \"./client/*\" \"./companion/*\" \"./scratchpad/*\""
+  },
+  "dependencies": {
+    "@playwright/test": "^1.52.0",
+    "dotenv": "^17.2.2",
+    "eventemitter2": "^6.4.9",
+    "mkdirp": "^3.0.1",
+    "ws": "^8.18.3"
+  }
+}
