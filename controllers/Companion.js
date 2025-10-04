@@ -41,11 +41,17 @@ export default class Companion {
       state.event.bus.emit('companion:connected');
     },
 
+    send: data => {
+      let { client } = this.state;
+      if (client?.status !== 'connected') throw new Error(`Companion not connected`);
+      client.send(data);
+    },
+
     rpc: async (proc, data) => {
-      let payload = { type: null, rpcid: null, ...data, type: `rpc:${proc}`, rpcid: crypto.randomUUID() };
-      this.state.client.send(payload);
+      let req = { type: null, rpcid: null, ...data, type: `rpc:${proc}`, rpcid: crypto.randomUUID() };
+      await post('companion.send', req);
       let p = Promise.withResolvers();
-      this.state.rpcs[payload.rpcid] = { pres: p.resolve, prej: p.reject };
+      this.state.rpcs[req.rpcid] = { pres: p.resolve, prej: p.reject };
       return await p.promise;
     },
 

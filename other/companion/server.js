@@ -5,19 +5,12 @@ export default function server(key, opt = {}) {
   if (!key) throw new Error(`Missing key`);
   opt.port ??= 8845;
 
+  let rpc = {};
+
   let ret = {
     events: new EventEmitter({ wildcard: true }),
     clients: new Set(),
-    rpc: (name, fn) => {
-      ret.events.on(`message:rpc:${name}`, async ({ ws, rpcid, ...data }) => {
-        try {
-          ws.send(JSON.stringify({ type: 'rpc:response', rpcid, data: await fn(data) }));
-        } catch (err) {
-          console.error(err);
-          ws.send(JSON.stringify({ type: 'rpc:response', rpcid, error: err.toString() }));
-        }
-      });
-    },
+    rpc: (name, fn) => rpc[name] = fn,
     broadcast: data => {
       for (let x of ret.clients) x.send(JSON.stringify(data));
     },
@@ -39,7 +32,7 @@ export default function server(key, opt = {}) {
 
     ret.send(ws, { type: 'handshake', status: 'hello', agent: 'webfoundry-companion' });
 
-    ws.on('message', (msg) => {
+    ws.on('message', async msg => {
       let data;
       try {
         data = JSON.parse(msg);
@@ -61,7 +54,20 @@ export default function server(key, opt = {}) {
       }
       let { type } = data;
       delete data.type;
-      ret.events.emit(`message:${type}`, { ws: null, ...data, ws });
+      if (type.startsWith('rpc:')) {
+        let { rpcid, ...params } = data;
+        try {
+          let proc = 'rpc:'.length;
+          let fn = rpc[type.slice(proc)];
+          if (!fn) throw new Error(`Unknown procedure: ${proc}`);
+          ws.send(JSON.stringify({ type: 'rpc:response', rpcid, data: await fn({ ws: null, ...params, ws }) }));
+        } catch (err) {
+          console.error(err);
+          ws.send(JSON.stringify({ type: 'rpc:response', rpcid, error: err.toString() }));
+        }
+      } else {
+        ret.events.emit(`message:${type}`, { ws: null, ...data, ws });
+      }
     });
   });
 
