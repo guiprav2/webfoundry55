@@ -3,13 +3,19 @@ import chokidar from 'chokidar';
 import dotenv from 'dotenv';
 import fs, { promises as fsp } from 'fs';
 import getpass from './getpass.js';
+import os from 'os';
 import path from 'path';
+import pidtree from 'pidtree';
+import pty from 'node-pty';
 import readline from 'readline';
 import server from './server.js';
+import { execFile } from 'child_process';
 import { glob } from 'glob';
 import { mkdirp } from 'mkdirp';
+import { promisify } from 'util';
 import { rimraf } from 'rimraf';
 
+let execFileAsync = promisify(execFile);
 let configDir = `${process.env.HOME}/.webfoundry`;
 mkdirp.sync(configDir);
 let configFile = `${configDir}/config.env`;
@@ -71,6 +77,78 @@ let watcher = chokidar.watch(workspace, { ignoreInitial: true, ignored: /^node_m
   type: `files:${{ add: 'save', change: 'save', unlink: 'rm'}[x]}`,
   path: path.slice(workspace.length + 1),
 })));
+
+let terminals = {};
+s.rpc('shell:spawn', async ({ ws, shell, subdir, cols, rows }) => {
+  shell ??= 'bash';
+  let cwd = workspace;
+  subdir && (cwd += `/${subdir}`);
+  await mkdirp(cwd);
+  let session = crypto.randomUUID();
+  let term = pty.spawn(shell, [], { name: 'xterm-color', cols, rows, cwd, env: { WF_SESSION: session, ...process.env } });
+  term.session = session;
+  term.ws = ws;
+  terminals[session] = term;
+  term.on('data', data => ws.send(JSON.stringify({ type: 'shell', subtype: 'stream', pipe: 'stdout', session, payload: Buffer.from(data).toString('base64') })));
+  let lastLabel;
+  term.monint = setInterval(async () => {
+    try {
+      let pids = await pidtree(term.pid);
+      pids.push(term.pid);
+      let { stdout } = await execFileAsync('ps', ['-o', 'pid=,comm=', '-p', pids.join(',')]);
+      let lines = stdout.trim().split('\n').filter(Boolean);
+      let procs = lines.map(line => {
+        let [pidStr, ...cmdParts] = line.trim().split(/\s+/);
+        return { pid: Number(pidStr), command: cmdParts.join(' ') };
+      })
+      let names = procs.map(p => p.command);
+      let process = names.at(-1);
+      let lastPid = procs.at(-1)?.pid;
+      let cwd = null;
+      try { cwd = await fsp.readlink(`/proc/${lastPid}/cwd`) } catch {}
+      let label = 'system';
+      if (cwd) {
+        if (cwd === workspace) label = 'workspace';
+        else if (cwd.startsWith(workspace + '/')) {
+          let rel = cwd.slice(workspace.length + 1);
+          label = rel.split('/')[0] || 'workspace';
+        }
+      }
+      label += ` (${process})`
+      if (lastLabel === label) return
+      lastLabel = label;
+      ws.send(JSON.stringify({ type: 'shell', subtype: 'label', session, label }))
+    } catch (err) {
+      if (err.code === 'ESRCH' || err.code === 'ENOENT') return
+      console.error('process monitor error:', err)
+    }
+  }, 500)
+  term.on('exit', () => {
+    clearInterval(term.monint);
+    delete terminals[session];
+    ws.send(JSON.stringify({ type: 'shell:close', session }));
+  });
+  return session;
+});
+
+s.rpc('shell:resize', ({ session, cols, rows }) => {
+  let term = terminals[session];
+  if (!term) throw new Error(`Unknown terminal session: ${session}`);
+  term.resize(cols, rows);
+});
+
+s.rpc('shell:kill', ({ session }) => {
+  let term = terminals[session];
+  if (!term) throw new Error(`Unknown terminal session: ${session}`);
+  clearInterval(term.monint);
+  term.kill();
+});
+
+s.events.on('message:shell', ({ session, payload }) => {
+  let term = terminals[session];
+  if (!term) throw new Error(`Unknown terminal session: ${session}`);
+  term.write(Buffer.from(payload, 'base64').toString('utf-8'));
+});
 
 console.log('Webfoundry Companion listening on ws://localhost:8845/');
 console.log(`Current workspace: ${workspace}`);
