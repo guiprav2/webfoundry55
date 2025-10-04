@@ -35,7 +35,7 @@ export default class Files {
       bus.on('projects:mv:ready', async () => await post('files.load'));
       bus.on('projects:rm:ready', async () => await post('files.load'));
       bus.on('files:select:ready', ({ path }) => {
-        if (!path) return;
+        if (!path || path.endsWith('/')) return;
         let parts = path.split('/').slice(0, -1);
         let partial = '';
         for (let i = 0; i < parts.length; i++) {
@@ -145,6 +145,21 @@ export default class Files {
         });
       }
     },
+
+    dragstart: (ev, path) => { ev.dataTransfer.effectAllowed = 'move'; ev.dataTransfer.setData('text/plain', path) },
+    dragover: (ev, path) => { ev.preventDefault(); ev.stopPropagation(); ev.dataTransfer.dropEffect = 'move'; this.state.dropTarget = path === '/' ? path : path.slice(0, path.lastIndexOf('/')) },
+
+    drop: async (ev, dest) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      this.state.dropTarget = null;
+      d.update();
+      let src = ev.dataTransfer.getData('text/plain');
+      let tail = src.split('/').at(src.endsWith('/') ? -2 : -1) + (src.endsWith('/') ? '/' : '');
+      await rfiles.mv(state.projects.current, src, dest === '/' ? tail : dest.slice(0, dest.lastIndexOf('/') + 1) + tail);
+    },
+
+    dragend: () => { this.state.dropTarget = null },
 
     mv: async path => {
       let project = state.projects.current;

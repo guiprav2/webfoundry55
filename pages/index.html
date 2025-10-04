@@ -2577,6 +2577,9 @@
             </button>
             <div
               class="FilesPanel-fileList flex flex-col gap-2 p-4 overflow-auto min-h-0 basis-0 flex-1"
+              wf-class="{{state.files.dropTarget === '/' &amp;&amp; 'bg-black/50'}}"
+              wf-ondragover="post('files.dragover', event, '/')"
+              wf-ondrop="post('files.drop', event, '/')"
             >
               <div
                 class="italic mb-1"
@@ -2590,8 +2593,12 @@
                 class="FilesPanel-file flex items-center gap-3 rounded outline-none py-1 justify-between px-2 ml-[0rem]"
                 draggable="true"
                 wf-map="x of state.files.list"
-                wf-class="{{`ml-[${(x[1].split('/').length - 1) * 1.25}rem]`}} {{state.files.current === x[1] + x[0] &amp;&amp; 'bg-black/50'}} {{!state.files.expanded(x[1]) &amp;&amp; 'hidden'}}"
+                wf-class="{{`ml-[${(x[1].split('/').length - 1) * 1.25}rem]`}} {{(state.files.current === x[1] + x[0] || state.files.dropTarget === x[1] + x[0]) &amp;&amp; 'bg-black/50'}} {{!state.files.expanded(x[1]) &amp;&amp; 'hidden'}}"
                 wf-onclick="post('files.select', joinPath(x[1], x[0]) + (x[2] ? '/' : ''))"
+                wf-ondragstart="post('files.dragstart', event, joinPath(x[1], x[0]) + (x[2] ? '/' : ''))"
+                wf-ondragover="post('files.dragover', event, x[1] + x[0] + (x[2] ? '/' : ''))"
+                wf-ondrop="post('files.drop', event, joinPath(x[1], x[0]) + (x[2] ? '/' : ''))"
+                wf-ondragend="post('files.dragend')"
               >
                 <div class="max-w-[calc(100%_-_5rem)] flex items-center gap-3">
                   <div
