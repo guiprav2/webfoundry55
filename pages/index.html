@@ -117,7 +117,7 @@
           class="text-neutral-100 text-center bg-[#091017] py-3.5 border-b border-black/50"
           wf-if="state.projects.current"
         >
-          {{state.projects.currentProject.name}}
+          {{state.projects.current?.split?.(':')[0]}}
         </div>
         <div
           wf-if="state.settings.options?.toolbar &amp;&amp; state.files.current?.endsWith('.html') &amp;&amp; !state.designer.preview"
@@ -3000,6 +3000,7 @@
           id="DockedShellWrapper"
           wf-class="{{!state.shell.open &amp;&amp; 'hidden'}}"
           wf-if="state.shell.open &amp;&amp; !state.shell.expand"
+          hidden=""
         >
           <div
             class="flex flex-col flex-1 text-neutral-100 max-w-full ShellWrapper"
@@ -3039,7 +3040,6 @@
                 wf-onclick="post('shell.spawn')"
                 wf-if="state.shell.list.length"
               ></button>
-              <div class="flex-1"></div>
             </div>
             <div
               class="p-3 bg-black flex flex-col overflow-hidden flex-1 Shell"
@@ -3055,7 +3055,11 @@
             </div>
           </div>
         </div>
-        <div wf-if="state.collab.rtc" class="border-t border-black/50">
+        <div
+          wf-if="state.collab.rtc"
+          class="border-t border-black/50"
+          hidden=""
+        >
           <div
             class="text-sm px-4 py-3 text-blue-400"
             wf-if="state.collab.rtc.presence.length &lt;= 1"
@@ -3073,6 +3077,7 @@
         <div
           class="text-sm px-4 py-3 flex gap-2 text-red-500"
           wf-if="state.app.autoassist?.clipboard?.length"
+          hidden=""
         >
           <div>Assistant clipboard:</div>
           <div

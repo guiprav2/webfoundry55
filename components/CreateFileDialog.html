@@ -131,18 +131,15 @@
             class="outline-none bg-transparent"
             wf-onchange="this.onChangeType(event)"
           >
-            <!-- When the parent passes fileDisabled as true the select shows “Folder” selected -->
             <option value="file" selected="">File</option>
             <option value="folder">Folder</option>
           </select>
         </div>
-        <!-- The name input uses a binding on its value -->
         <input
           class="outline-none mt-2 w-full rounded px-2 py-1 bg-[#2b2d3130] disabled:opacity-50 focus:bg-[#2b2d3150]"
           placeholder="Name"
           value="{{this.value}}"
         />
-        <!-- Error message if a value exists but fails validation -->
         <div
           class="text-yellow-500 mt-2"
           wf-if="this.value &amp;&amp; !this.valid"
@@ -152,15 +149,12 @@
           <span class="font-bold">.jsx</span> (unsupported format).
         </div>
         <div class="flex gap-1.5 mt-3">
-          <!-- The Cancel button: its disabled state is driven by state.app.tourDisable -->
           <button
             value="cancel"
             class="flex-1 outline-none rounded px-3 py-1 bg-[#121d2b] hover:bg-[#1a2a40] transition-colors disabled:hover:bg-[#121d2b] disabled:opacity-50"
-            wf-disabled="state.app.tourDisable.has('cancelBtns')"
           >
             Cancel
           </button>
-          <!-- The OK button is disabled if the name input is invalid -->
           <button
             value="ok"
             class="flex-1 outline-none rounded px-3 py-1 bg-[#0071b2] hover:bg-[#008ad9] transition-colors disabled:opacity-50 disabled:hover:bg-[#0071b2]"
