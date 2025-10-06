@@ -2967,8 +2967,8 @@
 
           <div class="flex flex-1" id="Canvas">
             <div
-              class="flex justify-center items-center px-16 flex-1"
-              wf-if="!(state.shell.open &amp;&amp; state.shell.expand) &amp;&amp; state.app.panel !== 'docs' &amp;&amp; !state.files.current"
+              class="flex justify-center items-center px-16 flex-1 select-none"
+              wf-class="{{!state.app.brandCanvas &amp;&amp; 'hidden'}}"
             >
               <div class="gfont-[Pacifico] text-6xl text-black/70">
                 Webfoundry
@@ -2976,22 +2976,17 @@
             </div>
 
             <div
-              class="flex flex-1 min-w-96 hidden Designer"
-              wf-class="{{!state.designer.target(state.files.current) &amp;&amp; 'hidden'}}"
+              class="flex flex-1 min-w-96 bg-white"
+              wf-map="x of state.designer.list"
+              wf-class="{{!state.designer.frameVisible(x.path) &amp;&amp; 'hidden'}}"
             >
-              <div class="Designer-leftPadder flex-1"></div>
               <iframe
-                class="Designer-frame self-center w-full h-full bg-white"
+                class="flex-1"
+                wf-src="state.designer.src(x.path, state.designer.preview)"
+                wf-onattach="post('designer.frameAttach', x.path, _1)"
+                wf-onload="post('designer.frameReady', x.path)"
+                wf-onerror="post('designer.frameReady', x.path, event)"
               ></iframe>
-
-              <div class="Designer-rightPadder flex flex-1 shrink-0">
-                <div class="Designer-rightPadderPole flex items-center px-1">
-                  <button
-                    class="Designer-resizeBtn w-2 rounded-full h-24 bg-neutral-300 outline-none"
-                    wf-onmousedown="event.preventDefault(), post('designer.resize')"
-                  ></button>
-                </div>
-              </div>
             </div>
           </div>
         </div>
