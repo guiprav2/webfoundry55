@@ -19,6 +19,9 @@ export default class Designer {
       let [name, uuid] = state.projects.current.split(':');
       return `/${preview ? 'preview' : 'files'}/${uuid}/${path}`;
     },
+
+    get current() { return this.list.find(x => x.path === state.files.current) },
+    get open() { return this.current?.ready },
   };
 
   actions = {
@@ -62,13 +65,13 @@ export default class Designer {
     },
 
     frameAttach: (path, el) => {
-      let frame = this.state.list.find(x => x.path === path);
+      let frame = this.state.current;
       if (!frame) throw new Error(`Designer frame not found: ${path}`);
       frame.el = el;
     },
 
     frameReady: async (path, err) => {
-      let frame = this.state.list.find(x => x.path === path);
+      let frame = this.state.current;
       if (!frame) throw new Error(`Designer frame not found: ${path}`);
       if (err) return frame.reject(err);
       frame.mutobs = new MutationObserver(async () => {
@@ -77,27 +80,50 @@ export default class Designer {
       });
       frame.mutobs.observe(frame.html, { attributes: true, subtree: true, childList: true, characterData: true });
       await post('designer.maptrack', frame);
-      frame.html.addEventListener('click', async ev => {
-        frame.el.focus();
-        !ev.target.closest('button') && ev.preventDefault();
-        await post('designer.changeSelection', frame, 'master', [ev.target]);
-      }, true);
+      frame.html.addEventListener('mousedown', async ev => await post('designer.mousedown', ev), true);
+      frame.html.addEventListener('keydown', async ev => await post('designer.keydown', ev), true);
       frame.ready = true;
       frame.resolve();
     },
 
     maptrack: async frame => [frame.snap, frame.map] = htmlsnap(frame.html, { idtrack: true, map: frame.map }),
 
-    changeSelection: (frame, cur, s) => {
+    mousedown: async ev => {
+      frame.el.focus();
+      !ev.target.closest('button') && ev.preventDefault();
+      await post('designer.changeSelection', 'master', [ev.target]);
+    },
+
+    keydown: async ev => {
+      if (/^input|textarea|button$/i.test(document.activeElement.tagName)) return;
+      let key = ev.key;
+      if (ev.ctrlKey) key = `Ctrl-${key}`;
+      let cmd = [...Object.values(actions)].find(x => arrayify(x.shortcut).includes(key));
+      if (!cmd || (cmd.condition && !cmd.condition())) return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      await cmd.handler();
+    },
+
+    changeSelection: (cur, s) => {
+      let frame = this.state.current;
+      if (!frame) throw new Error(`Designer not open`);
       s = [...new Set(arrayify(s).filter(x => frame.body.contains(x)).map(x => frame.map.getKey(x)).filter(Boolean))];
       if (!s.length) frame.lastCursors[cur] = frame.cursors[cur];
       frame.cursors[cur] = s;
       state.event.bus.emit('designer:changeSelection:ready', { frame, cur, s });
     },
 
+    toggleSelections: async cur => {
+      let frame = this.state.current;
+      let sel = frame.cursors[cur] || [];
+      if (sel.length) await post('designer.changeSelection', cur, []);
+      else if (frame.lastCursors[cur]?.length) await post('designer.changeSelection', cur, frame.lastCursors[cur].map(x => frame.map.get(x)));
+    },
+
     trackCursors: async () => {
       requestAnimationFrame(async () => await post('designer.trackCursors'));
-      let frame = this.state.list.find(x => x.path === state.files.current);
+      let frame = this.state.current;
       if (!frame) return;
       for (let [k, ids] of Object.entries(frame.cursors)) {
         let ovs = (frame.overlays[k] ??= []);
