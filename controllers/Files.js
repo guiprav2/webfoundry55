@@ -70,7 +70,7 @@ export default class Files {
         }
       });
       bus.on('files:rm:ready', async () => await post('files.load'));
-      for (let x of ['save', 'rm']) {
+      for (let x of ['add', 'rm']) {
         bus.on(`broadcast:files:${x}`, ({ event, path }) => {
           let name = path.split('/')[0];
           let storage = rprojects.storage(state.projects.list.find(x => x.startsWith(`${name}:`)));

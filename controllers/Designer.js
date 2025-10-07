@@ -149,7 +149,7 @@ export default class Designer {
       let body = frame.body.cloneNode(true);
       body.style.display = 'none';
       let betterscroll = true;
-      let html = `<!doctype html><html>${defaultHead({ betterscroll })}${frame.body.cloneNode(true).outerHTML}</html>`;
+      let html = `<!doctype html><html>${defaultHead({ betterscroll })}${body.outerHTML}</html>`;
       await rfiles.save(project, frame.path, new Blob([html], { type: 'text/html' }));
       let phtml = await prettier(html, { parser: 'html' });
       if (phtml === html) return;

@@ -25,8 +25,10 @@ class FilesRepository {
     let storage = rprojects.storage(project);
     switch (storage) {
       case 'local': {
-        await lf.setItem(`webfoundry:projects:files:${uuid}:${path}`, blob);
-        await post('broadcast.publish', 'files:save', { project, path: `${name}/${path}` });
+        let k = `webfoundry:projects:files:${uuid}:${path}`;
+        let exists = await lf.getItem(k);
+        await lf.setItem(k, blob);
+        await post('broadcast.publish', `files:${exists ? 'change' : 'add'}`, { project, path: `${name}/${path}` });
         break;
       }
       case 'cfs': return await post('companion.rpc', 'files:save', { path: `${name}/${path}`, data: await b64(blob) });

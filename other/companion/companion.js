@@ -74,7 +74,7 @@ s.rpc('files:rm', async ({ path }) => await rimraf(path));
 
 let watcher = chokidar.watch(workspace, { ignoreInitial: true, ignored: /^node_modules\/|\/\.git\/|\.swp$/ });
 ['add', 'change', 'unlink'].forEach(x => watcher.on(x, path => s.broadcast({
-  type: `files:${{ add: 'save', change: 'save', unlink: 'rm'}[x]}`,
+  type: `files:${x === 'unlink' ? 'rm' : x}`,
   path: path.slice(workspace.length + 1),
 })));
 
