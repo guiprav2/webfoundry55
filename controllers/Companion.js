@@ -63,6 +63,14 @@ export default class Companion {
       if (ev.error) return rpc.prej(new Error(ev.error));
       rpc.pres(ev.data);
     },
+
+    copyKey: async ev => {
+      await navigator.clipboard.writeText(state.settings.opt.companionKey);
+      let label = ev.target.closest('button').children[1];
+      label.classList.remove('hidden');
+      clearTimeout(this.state.copyKeyTimeout);
+      this.state.copyKeyTimeout = setTimeout(() => label.classList.add('hidden'), 2000);
+    },
   };
 };
 

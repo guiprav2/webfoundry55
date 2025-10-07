@@ -89,6 +89,7 @@ export default class Designer {
         frame.mutobs.observe(frame.html, { attributes: true, subtree: true, childList: true, characterData: true });
         await post('designer.maptrack', frame);
         frame.html.addEventListener('mousedown', async ev => await post('designer.mousedown', ev), true);
+        frame.html.addEventListener('click', ev => ev.preventDefault(), true);
         frame.html.addEventListener('dblclick', async ev => await post('designer.dblclick', ev), true);
         frame.html.addEventListener('keydown', async ev => await post('designer.keydown', ev), true);
       }
@@ -100,7 +101,7 @@ export default class Designer {
 
     mousedown: async ev => {
       this.state.current.el.focus();
-      !ev.target.closest('button') && ev.preventDefault();
+      ev.preventDefault();
       await post('designer.changeSelection', 'master', [ev.target]);
     },
 
