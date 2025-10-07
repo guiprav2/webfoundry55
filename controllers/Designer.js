@@ -89,6 +89,7 @@ export default class Designer {
         frame.mutobs.observe(frame.html, { attributes: true, subtree: true, childList: true, characterData: true });
         await post('designer.maptrack', frame);
         frame.html.addEventListener('mousedown', async ev => await post('designer.mousedown', ev), true);
+        frame.html.addEventListener('dblclick', async ev => await post('designer.dblclick', ev), true);
         frame.html.addEventListener('keydown', async ev => await post('designer.keydown', ev), true);
       }
       frame.ready = true;
@@ -103,8 +104,16 @@ export default class Designer {
       await post('designer.changeSelection', 'master', [ev.target]);
     },
 
+    dblclick: async ev => {
+      if (!/^(input|textarea)$/i.test(ev.target.tagName)) return;
+      ev.target.select();
+    },
+
     keydown: async ev => {
-      if (/^input|textarea|button$/i.test(document.activeElement.tagName)) return;
+      if (/^input|textarea|button$/i.test(this.state.current.doc.activeElement.tagName)) {
+        if (ev.key === 'Escape') ev.target.blur();
+        return;
+      }
       let key = ev.key;
       if (ev.ctrlKey) key = `Ctrl-${key}`;
       let cmd = [...Object.values(actions)].find(x => arrayify(x.shortcut).includes(key));
