@@ -18,7 +18,7 @@ export default class Designer {
 
     src(path, preview) {
       let [name, uuid] = state.projects.current.split(':');
-      return `/${preview ? 'preview' : 'files'}/${uuid}/${path}`;
+      return `/${preview ? 'preview' : 'files'}/${name}:${uuid}/${path}`;
     },
 
     get current() { return this.list.find(x => x.path === state.files.current) },

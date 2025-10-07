@@ -58,7 +58,7 @@
           wf-if="loadman.busy()"
           hidden=""
         >
-          <img src="../media/loading.svg" class="relative -top-px w-12" />
+          <img src="../media/loading.svg" class="w-12" />
           <div
             class="flex justify-center items-center text-xs absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[55%] truncate w-8"
             wf-if="loadman.busy() &gt; 1"
@@ -91,14 +91,16 @@
         ></button>
         <button
           class="outline-none nf border-b border-black/50 transition-all text-xl hover:bg-black/70 w-16 h-16 IconsSidebar-playBtn nf-fa-play"
-          wf-if="state.designer.target(state.files.current) &amp;&amp; !state.designer.preview"
-          wf-onclick="post('designer.togglePreview')"
-        ></button
-        ><button
-          class="outline-none nf border-b border-black/50 transition-all text-xl hover:bg-black/70 w-16 h-16 nf-fa-pause IconsSidebar-pauseBtn"
-          wf-if="state.designer.target(state.files.current) &amp;&amp; state.designer.preview"
+          wf-if="state.designer.open &amp;&amp; !state.designer.preview"
           wf-onclick="post('designer.togglePreview')"
         ></button>
+
+        <button
+          class="outline-none nf border-b border-black/50 transition-all text-xl hover:bg-black/70 w-16 h-16 nf-fa-pause IconsSidebar-pauseBtn"
+          wf-if="state.designer.open &amp;&amp; state.designer.preview"
+          wf-onclick="post('designer.togglePreview')"
+        ></button>
+
         <button
           class="outline-none nf border-b border-black/50 transition-all text-xl hover:bg-black/70 w-16 h-16 nf-md-dots_vertical_circle IconsSidebar-settingsBtn"
           wf-class="{{state.app.panel === 'settings' &amp;&amp; 'bg-black/70'}}"
@@ -117,8 +119,9 @@
           class="text-neutral-100 text-center bg-[#091017] py-3.5 border-b border-black/50"
           wf-if="state.projects.current"
         >
-          {{state.projects.current?.split?.(':')[0]}}
+          {{state.projects.current?.split?.(':')?.[0]}}
         </div>
+
         <div
           wf-if="state.settings.options?.toolbar &amp;&amp; state.files.current?.endsWith('.html') &amp;&amp; !state.designer.preview"
         >
