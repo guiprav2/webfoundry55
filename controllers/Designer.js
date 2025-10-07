@@ -372,16 +372,9 @@ export default class Designer {
     changeHtml: async (cur, html) => {
       let frame = this.state.current;
       if (!frame) throw new Error(`Designer not open`);
-      if (html == null) {
-        let el = frame.map.get(frame.cursors[cur][0]);
-        let [btn, val] = await showModal('CodeDialog', { title: 'Change HTML', initialValue: el.outerHTML });
-        if (btn !== 'ok') return;
-        html = val;
-      }
       let replaced = [];
       let parents = [];
       let idxs = [];
-      let select = [];
       for (let el of frame.cursors[cur]) {
         el = frame.map.get(el);
         let p = el.parentElement;
@@ -389,11 +382,12 @@ export default class Designer {
         replaced.push(el);
         parents.push(p);
         idxs.push(i);
-        el.outerHTML = html;
-        select.push(p.children[i]);
       }
-      await new Promise(pres => setTimeout(pres));
-      await post('designer.changeSelection', cur, select);
+      if (html == null) {
+        let [btn, val] = await showModal('CodeDialog', { title: 'Change HTML', initialValue: replaced[0].outerHTML });
+        if (btn !== 'ok') return;
+        html = val;
+      }
       await post('designer.pushHistory', cur, async apply => {
         if (apply) {
           let newSelect = [];
