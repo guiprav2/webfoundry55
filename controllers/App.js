@@ -6,11 +6,14 @@ export default class App {
       top === window && await navigator.serviceWorker.register('sw.js');
       await post('event.init');
       await post('broadcast.init');
-      await post('settings.init');
-      await post('projects.init');
-      await post('companion.init');
-      await post('shell.init');
-      await post('files.init');
+      if (!location.pathname.startsWith('/collab.html')) {
+        await post('settings.init');
+        await post('projects.init');
+        await post('companion.init');
+        await post('shell.init');
+        await post('files.init');
+      }
+      await post('collab.init');
       await post('codeEditor.init');
       await post('styles.init');
       await post('designer.init');
