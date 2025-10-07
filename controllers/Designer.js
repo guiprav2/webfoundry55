@@ -16,9 +16,10 @@ export default class Designer {
       return state.files.current === path && frame.ready;
     },
 
-    src(path, preview) {
+    src(path) {
+      let frame = this.list.find(x => x.path === path);
       let [name, uuid] = state.projects.current.split(':');
-      return `/${preview ? 'preview' : 'files'}/${name}:${uuid}/${path}`;
+      return `/${frame.preview ? 'preview' : 'files'}/${name}:${uuid}/${path}`;
     },
 
     get current() { return this.list.find(x => x.path === state.files.current) },
@@ -47,6 +48,7 @@ export default class Designer {
         get html() { return this.doc?.documentElement },
         get head() { return this.doc?.head },
         get body() { return this.doc?.body },
+        preview: false,
         mutobs: null,
         snap: null,
         map: new BiMap(),
@@ -78,14 +80,16 @@ export default class Designer {
       let frame = this.state.current;
       if (!frame) throw new Error(`Designer frame not found: ${path}`);
       if (err) return frame.reject(err);
-      frame.mutobs = new MutationObserver(async () => {
+      if (!frame.preview) {
+        frame.mutobs = new MutationObserver(async () => {
+          await post('designer.maptrack', frame);
+          await post('designer.save', frame);
+        });
+        frame.mutobs.observe(frame.html, { attributes: true, subtree: true, childList: true, characterData: true });
         await post('designer.maptrack', frame);
-        await post('designer.save', frame);
-      });
-      frame.mutobs.observe(frame.html, { attributes: true, subtree: true, childList: true, characterData: true });
-      await post('designer.maptrack', frame);
-      frame.html.addEventListener('mousedown', async ev => await post('designer.mousedown', ev), true);
-      frame.html.addEventListener('keydown', async ev => await post('designer.keydown', ev), true);
+        frame.html.addEventListener('mousedown', async ev => await post('designer.mousedown', ev), true);
+        frame.html.addEventListener('keydown', async ev => await post('designer.keydown', ev), true);
+      }
       frame.ready = true;
       frame.resolve();
     },
@@ -156,6 +160,15 @@ export default class Designer {
       await rfiles.save(project, frame.path, new Blob([phtml], { type: 'text/html' }));
       //state.event.bus.emit('designer:save:ready', { project, path });
     }, 200),
+
+    togglePreview: async () => {
+      let frame = this.state.current;
+      if (!frame) throw new Error(`Designer not open`);
+      let p = Promise.withResolvers();
+      Object.assign(frame, { ready: false, resolve: p.resolve, reject: p.reject, preview: !frame.preview });
+      d.update();
+      await loadman.run('designer.togglePreview', async () => await p.promise);
+    },
 
     pushHistory: async (cur, op) => {
       let frame = this.state.current;
