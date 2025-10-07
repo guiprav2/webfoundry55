@@ -2736,7 +2736,7 @@
                   />
                 </div>
               </div>
-              <div class="mt-4 space-y-2">
+              <div class="space-y-2 mt-2 -ml-3">
                 <label
                   class="w-full text-left px-3 py-2 flex justify-between items-center rounded hover:bg-black/50 outline-none cursor-pointer"
                   wf-if="state.projects.current"
@@ -2822,29 +2822,6 @@
                       class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-5"
                     ></div>
                   </div>
-                </label>
-
-                <label
-                  class="w-full text-left px-3 py-2 flex justify-between items-center rounded hover:bg-black/50 outline-none cursor-pointer"
-                >
-                  <div class="shrink-0">Restrict file moving</div>
-                  <label
-                    class="relative inline-flex items-center cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      class="peer hidden"
-                      wf-disabled="loadman.busy()"
-                      wf-checked="state.settings.opt.mvRestricted"
-                      wf-onclick="event.preventDefault(), post('settings.option', 'mvRestricted')"
-                    />
-                    <div
-                      class="w-11 h-6 rounded-full peer-checked:bg-green-500 bg-black/50"
-                    ></div>
-                    <div
-                      class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-5"
-                    ></div>
-                  </label>
                 </label>
 
                 <label
