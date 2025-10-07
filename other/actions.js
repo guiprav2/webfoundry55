@@ -505,24 +505,19 @@ let actions = {
   changeHtml: {
     description: `Changes the outer HTML of selected elements (prompts if not provided)`,
     shortcut: 'm',
-    condition: (cur = 'master') =>
-      state.designer.open && state.designer.cursors[cur]?.length,
+    condition: (cur = 'master') => state.designer.open && state.designer.current.cursors[cur]?.length,
     negativeReason: (cur = 'master') => [
       !state.designer.open && `Designer closed.`,
-      !state.designer.cursors[cur]?.length && `No elements selected`,
+      !state.designer.current.cursors[cur]?.length && `No elements selected`,
     ],
     parameters: {
       type: 'object',
       properties: {
-        uid: {
-          type: 'string',
-          description: `Whose selected elements to change (defaults to master)`,
-        },
+        uid: { type: 'string', description: `Whose selected elements to change (defaults to master)` },
         html: { type: 'string' },
       },
     },
-    handler: async ({ uid = 'master', html } = {}) =>
-      await post('designer.changeHtml', uid, html),
+    handler: async ({ uid = 'master', html } = {}) => await post('designer.changeHtml', uid, html),
   },
 
   changeInnerHtml: {
