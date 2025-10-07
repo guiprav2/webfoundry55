@@ -3,6 +3,7 @@ import '../other/util.js';
 export default class App {
   actions = {
     init: async () => {
+      top === window && await navigator.serviceWorker.register('sw.js');
       await post('event.init');
       await post('broadcast.init');
       await post('settings.init');

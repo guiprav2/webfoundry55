@@ -25,6 +25,20 @@ export default class Files {
   actions = {
     init: () => {
       let { bus } = state.event;
+      navigator.serviceWorker.addEventListener('message', async event => {
+        let { type, project, path } = event.data || {};
+        if (type !== 'fetch') return;
+        let port = event.ports[0];
+        try {
+          let notFound = () => port.postMessage({ status: 404, data: new Blob(['Not found'], { type: 'text/plain' }) });
+          let data = await rfiles.load(project, path);
+          if (!data) return notFound();
+          port.postMessage({ status: 200, data });
+        } catch (err) {
+          console.error(err);
+          port.postMessage({ status: 500, error: err.message });
+        }
+      });
       bus.on('projects:select:ready', async () => await loadman.run('files.projectSelect', async () => {
         this.state.list = [];
         d.update();
