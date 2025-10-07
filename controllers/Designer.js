@@ -369,6 +369,16 @@ export default class Designer {
       });
     },
 
+    toggleHidden: async cur => {
+      let frame = this.state.current;
+      if (!frame) throw new Error(`Designer not open`);
+      let targets = frame.cursors[cur].map(x => frame.map.get(x)).filter(Boolean);
+      let prev = targets.map(x => x.hidden);
+      await post('designer.pushHistory', cur, async apply => {
+        for (let i = 0; i < targets.length; i++) targets[i].hidden = apply ? !prev[i] : prev[i];
+      });
+    },
+
     changeHtml: async (cur, html) => {
       let frame = this.state.current;
       if (!frame) throw new Error(`Designer not open`);

@@ -597,23 +597,18 @@ let actions = {
   toggleHidden: {
     description: `Toggles visibility of selected elements (via hidden attribute)`,
     shortcut: 'x',
-    condition: (cur = 'master') =>
-      state.designer.open && state.designer.cursors[cur]?.length,
+    condition: (cur = 'master') => state.designer.open && state.designer.current.cursors[cur]?.length,
     negativeReason: (cur = 'master') => [
       !state.designer.open && `Designer closed.`,
-      !state.designer.cursors[cur]?.length && `No elements selected`,
+      !state.designer.current.cursors[cur]?.length && `No elements selected.`,
     ],
     parameters: {
       type: 'object',
       properties: {
-        uid: {
-          type: 'string',
-          description: `Whose selected elements to toggle (defaults to master)`,
-        },
+        uid: { type: 'string', description: `Whose selected elements to toggle (defaults to master)` },
       },
     },
-    handler: async ({ uid = 'master' } = {}) =>
-      await post('designer.toggleHidden', uid),
+    handler: async ({ uid = 'master' } = {}) => await post('designer.toggleHidden', uid),
   },
 
   replaceTextContent: {
