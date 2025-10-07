@@ -70,7 +70,7 @@ export default class Files {
         }
       });
       bus.on('files:rm:ready', async () => await post('files.load'));
-      for (let x of ['add', 'rm']) {
+      for (let x of ['add', 'change', 'rm']) {
         bus.on(`broadcast:files:${x}`, ({ event, path }) => {
           let name = path.split('/')[0];
           let storage = rprojects.storage(state.projects.list.find(x => x.startsWith(`${name}:`)));
@@ -83,9 +83,11 @@ export default class Files {
           if (storage !== 'cfs') return;
           bus.emit(event.split(':').slice(1).join(':'), { path });
         });
-        bus.on(`files:${x}`, async ({ event, path }) => {
+        bus.on(`files:${x}`, async ({ path }) => {
           if (!path.startsWith(`${state.projects.current.split(':')[0]}/`)) return;
-          await post('files.load');
+          x !== 'change' && await post('files.load');
+          if (!path.endsWith('.html') && !path.endsWith('.js')) return;
+          (path.endsWith('.html') || x !== 'change') && await post('files.reflect');
         });
       }
       ['push', 'pull'].forEach(x => bus.on(`broadcast:files:${x}`, async () => await post('files.load')));
@@ -199,6 +201,15 @@ export default class Files {
         await rfiles.rm(project, path);
         bus.emit('files:rm:ready', { project, path });
       });
+    },
+
+    reflect: async () => {
+      let project = state.projects.current;
+      let files = await rfiles.list(project);
+      let templ = {};
+      for (let x of files.filter(x => x.endsWith('.html'))) templ[x] = await (await rfiles.load(project, x)).text();
+      await rfiles.save(project, 'webfoundry/templates.json', new Blob([JSON.stringify(templ)], { type: 'application/json' }));
+      await rfiles.save(project, 'webfoundry/scripts.json', new Blob([JSON.stringify(files.filter(x => x.endsWith('.js')))], { type: 'application/json' }));
     },
 
     push: async () => await loadman.run('files.push', async () => {

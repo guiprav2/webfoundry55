@@ -19,6 +19,7 @@ export default class Designer {
     src(path) {
       let frame = this.list.find(x => x.path === path);
       let [name, uuid] = state.projects.current.split(':');
+      if (frame.preview) path = path.slice('pages/'.length);
       return `/${frame.preview ? 'preview' : 'files'}/${name}:${uuid}/${path}`;
     },
 
