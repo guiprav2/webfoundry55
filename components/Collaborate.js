@@ -1,26 +1,20 @@
-import RealtimeCollaboration from '../other/collab.js';
+import RealtimeCollab from '../other/RealtimeCollab.js';
 
 class Collaborate {
   constructor() {
     window.collaborate = this;
     this.room = crypto.randomUUID();
-    this.link = `https://webfoundry-client.netlify.app/#${this.room}`;
-    this.collab = new RealtimeCollaboration(this.room);
+    this.link = `${location.origin}/collab.html#${this.room}`;
+    this.collab = new RealtimeCollab(this.room);
   }
 
-  selectLink(ev) {
-    ev.target.select();
-  }
-
-  linkKeyDown(ev) {
-    ev.preventDefault();
-  }
+  selectLink(ev) { ev.target.select() }
+  linkKeyDown(ev) { ev.preventDefault() }
 
   async copyLink(ev) {
     let original = ev.target.textContent;
-    try {
-      await navigator.clipboard.writeText(this.link);
-    } catch (err) {
+    try { await navigator.clipboard.writeText(this.link) }
+    catch (err) {
       console.error(err);
       ev.target.disabled = true;
       ev.target.textContent = 'Copy failed!';
