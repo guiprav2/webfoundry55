@@ -31,7 +31,7 @@ export default class Collab {
       rtc.events.on('presence:join', async () => await post('collab.sync'));
       rtc.events.on('rpc:*', async ev => await post('collab.rpcInvoke', ev));
       rtc.events.on('changeSelection', async ev => await post('designer.changeSelection', ev.peer, ev.s.map(x => state.designer.current.map.get(x))));
-      rtc.events.on('cmd', async ev => actions[ev.k].handler({ uid: ev.peer }));
+      rtc.events.on('cmd', async ev => await actions[ev.k].handler({ uid: null, ...ev, uid: ev.peer }));
     },
 
     stop: () => {
@@ -69,14 +69,14 @@ export default class Collab {
     },
 
     sync: async full => {
-      this.state.rtc.send({
+      this.state.rtc?.send?.({
         type: 'sync',
         project: state.projects.current,
         files: state.files.list,
         expandedPaths: [...state.files.expandedPaths],
         current: state.files.current,
         contents: full && state.designer.open && state.designer.current.snap,
-        cursors: state.designer.current.cursors,
+        cursors: state.designer.current?.cursors,
       });
     },
 
