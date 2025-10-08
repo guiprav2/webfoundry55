@@ -2567,22 +2567,13 @@
             class="FilesPanel flex flex-col bg-[#091017] text-neutral-100 w-96 border-r border-black/50 select-none shrink-0"
             wf-if="state.app.panel === 'files'"
           >
-            <button
-              class="FilesPanel-createBtn outline-none border-b border-black/50 transition-all h-12 text-xl transition-colors hover:bg-[#008ad9] shrink-0 bg-[#0071b2]"
-              wf-onclick="event.preventDefault(), post('files.create')"
-            >
-              Create
-            </button>
             <div
               class="FilesPanel-fileList flex flex-col gap-2 p-4 overflow-auto min-h-0 basis-0 flex-1"
               wf-class="{{state.files.dropTarget === '/' &amp;&amp; 'bg-black/50'}}"
               wf-ondragover="post('files.dragover', event, '/')"
               wf-ondrop="post('files.drop', event, '/')"
             >
-              <div
-                class="italic mb-1"
-                wf-if="!state.files.list.length &amp;&amp; loadman.ops['files.load']?.length"
-              >
+              <div class="italic mb-1" wf-if="!state.files.list.length">
                 Loading files, please wait...
               </div>
 

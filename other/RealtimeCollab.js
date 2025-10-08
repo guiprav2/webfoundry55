@@ -11,7 +11,7 @@ export default class RealtimeCollab {
 
   async joinRoom(room) {
     let colors = ['red-600', 'red-800', 'orange-600', 'orange-800', 'amber-600', 'amber-800', 'yellow-600', 'yellow-800', 'lime-600', 'lime-800', 'green-600', 'green-800', 'emerald-600', 'emerald-800', 'teal-600', 'teal-800', 'cyan-600', 'cyan-800', 'sky-600', 'sky-800', 'blue-600', 'blue-800', 'indigo-600', 'indigo-800', 'violet-600', 'violet-800', 'purple-600', 'purple-800', 'fuchsia-600', 'fuchsia-800', 'pink-600', 'pink-800', 'rose-600', 'rose-800'];
-    this.uid = 'master';
+    this.uid = location.pathname.startsWith('/collab.html') ? crypto.randomUUID() : 'master';
     this.color = colors[Math.floor(Math.random() * colors.length)];
     this.channel = this.supabase.channel(room, { config: { presence: { key: this.uid } } });
     this.channel.on('broadcast', { event: 'message' }, ({ payload }) => this.events.emit(payload.message.type, payload.message));

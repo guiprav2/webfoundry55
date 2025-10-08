@@ -47,7 +47,7 @@ export default class Companion {
       client.send(data);
     },
 
-    rpc: async (proc, data) => {
+    rpc: async (proc, data = {}) => {
       let req = { type: null, rpcid: null, ...data, type: `rpc:${proc}`, rpcid: crypto.randomUUID() };
       await post('companion.send', req);
       let p = Promise.withResolvers();

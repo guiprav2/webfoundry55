@@ -1,3 +1,5 @@
+let tabs = {};
+self.addEventListener('message', ({ source, data }) => data.type === 'webfoundry-register-tab' && (tabs[data.tabId] = source.id));
 self.addEventListener('fetch', event => {
   let url = new URL(event.request.url);
   let pathname = url.pathname;
@@ -9,21 +11,22 @@ self.addEventListener('fetch', event => {
   let project = parts.shift();
   let isPreview = prefix === '/preview/';
   let path = isPreview && pathname.endsWith('.html') ? 'index.html' : parts.join('/');
-  event.respondWith(new Promise(async resolve => {
+  let ref = event.request.referrer ? new URL(event.request.referrer) : null;
+  let tabId = url.searchParams.get('webfoundryTabId') || ref && ref.searchParams.get('webfoundryTabId');
+  if (!tabId) return;
+  event.respondWith(new Promise(async (resolve, reject) => {
     let channel = new MessageChannel();
-    let timeout = setTimeout(() => resolve(new Response('File request timed out', { status: 504 })), 30000);
-    channel.port1.onmessage = event => {
+    let timeout = setTimeout(() => reject(new Error('Timed out')), 30000);
+    channel.port1.onmessage = e => {
       clearTimeout(timeout);
-      let { status, error, data } = event.data || {};
+      let { status, error, data } = e.data || {};
       if (error) return resolve(new Response(error, { status }));
       resolve(new Response(data, { status }));
     };
-    let clientsList = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-    let shellClient = clientsList.find(c => {
-      let p = new URL(c.url).pathname;
-      return !p.startsWith('/files/') && !p.startsWith('/preview/');
-    });
-    if (shellClient) shellClient.postMessage({ type: 'fetch', project, path }, [channel.port2]);
-    else { clearTimeout(timeout); resolve(new Response('No shell client found', { status: 503 })) }
-  }));
+    let clientId = tabs[tabId];
+    if (!clientId) return reject(new Error('Client ID not registered'));
+    let client = await self.clients.get(clientId);
+    if (!client) return reject(new Error('Client not found'));
+    client.postMessage({ type: 'fetch', project, path }, [channel.port2]);
+  }).catch(err => new Response(err.message, { status: 503 })));
 });

@@ -20,7 +20,7 @@ export default class Designer {
       let frame = this.list.find(x => x.path === path);
       let [name, uuid] = state.projects.current.split(':');
       if (frame.preview) path = path.slice('pages/'.length);
-      return `/${frame.preview ? 'preview' : 'files'}/${name}:${uuid}/${path}`;
+      return `/${frame.preview ? 'preview' : 'files'}/${name}:${uuid}/${path}?webfoundryTabId=${sessionStorage.webfoundryTabId}`;
     },
 
     get current() { return this.list.find(x => x.path === state.files.current) },
@@ -42,6 +42,8 @@ export default class Designer {
 
     select: async path => {
       if (this.state.list.find(x => x.path === path)) return;
+      let { bus } = state.event;
+      let project = state.projects.current;
       let p = Promise.withResolvers();
       this.state.list.push({
         path,
@@ -62,11 +64,15 @@ export default class Designer {
         resolve: p.resolve,
         reject: p.reject,
       });
+      d.update();
       await loadman.run('designer.select', async () => {
-        try { await p.promise }
-        catch (err) {
+        try {
+          await p.promise;
+          bus.emit('designer:select:ready', { project, path });
+        } catch (err) {
           console.error(err);
           this.state.list = this.state.list.filter(x => x.path !== path);
+          bus.emit('designer:select:error', { project, path, err });
         }
       }, true);
     },
@@ -80,7 +86,8 @@ export default class Designer {
     frameReady: async (path, err) => {
       let frame = this.state.current;
       if (!frame) throw new Error(`Designer frame not found: ${path}`);
-      if (err) return frame.reject(err);
+      let { bus } = state.event;
+      if (err) { frame.reject(err); bus.emit('designer:frame:error', { frame, err }); return }
       if (!frame.preview) {
         frame.mutobs = new MutationObserver(async () => {
           await post('designer.maptrack', frame);
@@ -95,6 +102,7 @@ export default class Designer {
       }
       frame.ready = true;
       frame.resolve();
+      bus.emit('designer:frame:ready', { frame });
     },
 
     maptrack: async frame => [frame.snap, frame.map] = htmlsnap(frame.html, { idtrack: true, map: frame.map }),
@@ -169,7 +177,7 @@ export default class Designer {
       let phtml = await prettier(html, { parser: 'html' });
       if (phtml === html) return;
       await rfiles.save(project, frame.path, new Blob([phtml], { type: 'text/html' }));
-      //state.event.bus.emit('designer:save:ready', { project, path });
+      state.event.bus.emit('designer:save:ready', { project, path });
     }, 200),
 
     togglePreview: async () => {

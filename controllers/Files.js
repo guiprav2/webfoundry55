@@ -1,3 +1,4 @@
+import * as pako from 'https://esm.sh/pako';
 import prettier from '../other/prettier.js';
 import rfiles from '../repos/rfiles.js';
 import rprojects from '../repos/rprojects.js';
@@ -31,7 +32,7 @@ export default class Files {
         let port = event.ports[0];
         try {
           let notFound = () => port.postMessage({ status: 404, data: new Blob(['Not found'], { type: 'text/plain' }) });
-          let data = await rfiles.load(project, path);
+          let data = !location.pathname.startsWith('/collab.html') ? await rfiles.load(project, path) : await ungzblob(unb64(await post('collab.rpc', 'fetch', { project, path })), mimeLookup(path));
           if (!data) return notFound();
           port.postMessage({ status: 200, data });
         } catch (err) {
@@ -39,6 +40,7 @@ export default class Files {
           port.postMessage({ status: 500, error: err.message });
         }
       });
+      if (location.pathname.startsWith('/collab.html')) return;
       bus.on('projects:select:ready', async () => await loadman.run('files.projectSelect', async () => {
         this.state.list = [];
         d.update();
@@ -113,6 +115,7 @@ export default class Files {
     }), 500),
 
     select: path => {
+      if (location.pathname.startsWith('/collab.html')) return;
       let project = state.projects.current;
       let { bus } = state.event;
       bus.emit('files:select:start');
@@ -233,3 +236,16 @@ export default class Files {
     }),
   };
 };
+
+async function ungzblob(blob, type) {
+  if (blob == null) return null;
+  return new Blob([pako.ungzip(new Uint8Array(await blob.arrayBuffer()))], { type });
+}
+
+function unb64(base64, type = '') {
+  if (base64 == null) return null;
+  let chars = atob(base64);
+  let nums = new Array(chars.length);
+  for (let i = 0; i < chars.length; i++) nums[i] = chars.charCodeAt(i);
+  return new Blob([new Uint8Array(nums)], { type });
+}

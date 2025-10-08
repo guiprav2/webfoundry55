@@ -3,7 +3,13 @@ import '../other/util.js';
 export default class App {
   actions = {
     init: async () => {
-      top === window && await navigator.serviceWorker.register('sw.js');
+      if (top === window) {
+        sessionStorage.webfoundryTabId = crypto.randomUUID();
+        await navigator.serviceWorker.register('sw.js');
+        let sw = await navigator.serviceWorker.ready;
+        !navigator.serviceWorker.controller && location.reload();
+        sw.active.postMessage({ type: 'webfoundry-register-tab', tabId: sessionStorage.webfoundryTabId });
+      }
       await post('event.init');
       await post('broadcast.init');
       if (!location.pathname.startsWith('/collab.html')) {
@@ -11,8 +17,8 @@ export default class App {
         await post('projects.init');
         await post('companion.init');
         await post('shell.init');
-        await post('files.init');
       }
+      await post('files.init');
       await post('collab.init');
       await post('codeEditor.init');
       await post('styles.init');
