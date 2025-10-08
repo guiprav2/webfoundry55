@@ -1,5 +1,6 @@
 import * as pako from 'https://esm.sh/pako';
 import RealtimeCollab from '../other/RealtimeCollab.js';
+import morphdom from 'https://esm.sh/morphdom';
 import rfiles from '../repos/rfiles.js';
 
 export default class Collab {
@@ -10,8 +11,9 @@ export default class Collab {
       let { bus } = state.event;
       if (!location.pathname.startsWith('/collab.html')) {
         bus.on('files:select:ready', async () => await post('collab.sync'));
-        bus.on('designer:select:ready', async () => await post('collab.sync'));
-        bus.on('designer:save:ready', async () => await post('collab.sync'));
+        bus.on('designer:select:ready', async () => await post('collab.sync', true));
+        bus.on('designer:changeSelection:ready', async () => await post('collab.sync'));
+        bus.on('designer:save:ready', async () => await post('collab.sync', true));
       } else {
         let room = location.hash.slice(1);
         if (!room) { location.href = '/'; return }
@@ -63,18 +65,20 @@ export default class Collab {
       }
     },
 
-    sync: async () => {
+    sync: async full => {
       this.state.rtc.send({
         type: 'sync',
         project: state.projects.current,
         files: state.files.list,
         expandedPaths: [...state.files.expandedPaths],
         current: state.files.current,
-        contents: state.designer.open && state.designer.current.html.outerHTML,
+        contents: full && state.designer.open && state.designer.current.snap,
+        cursors: state.designer.current.cursors,
       });
     },
 
     apply: async ev => {
+      console.log('apply:', ev);
       state.projects.current = ev.project;
       state.files.list = ev.files;
       state.files.expandedPaths = new Set(ev.expandedPaths);
@@ -82,6 +86,8 @@ export default class Collab {
         state.files.current = ev.current;
         await post('designer.select', ev.current);
       }
+      ev.contents != null && morphdom(state.designer.current.html, ev.contents);
+      state.designer.current.cursors = ev.cursors;
     },
   };
 

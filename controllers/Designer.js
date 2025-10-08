@@ -1,7 +1,7 @@
 import BiMap from '../other/bimap.js';
 import Boo from 'https://esm.sh/@camilaprav/boo@1.0.6';
 import actions from '../other/actions.js';
-import htmlsnap from 'https://esm.sh/@camilaprav/htmlsnap@0.0.5';
+import htmlsnap from 'https://esm.sh/@camilaprav/htmlsnap@0.0.13';
 import prettier from '../other/prettier.js';
 import rfiles from '../repos/rfiles.js';
 import { arrayify, debounce } from '../other/util.js';
@@ -177,7 +177,7 @@ export default class Designer {
       let phtml = await prettier(html, { parser: 'html' });
       if (phtml === html) return;
       await rfiles.save(project, frame.path, new Blob([phtml], { type: 'text/html' }));
-      state.event.bus.emit('designer:save:ready', { project, path });
+      state.event.bus.emit('designer:save:ready', { project, path: frame.path });
     }, 200),
 
     togglePreview: async () => {
