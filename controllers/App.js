@@ -4,11 +4,14 @@ export default class App {
   actions = {
     init: async () => {
       if (top === window) {
-        sessionStorage.webfoundryTabId = crypto.randomUUID();
+        sessionStorage.webfoundryTabId ??= crypto.randomUUID();
         await navigator.serviceWorker.register('sw.js');
-        let sw = await navigator.serviceWorker.ready;
-        !navigator.serviceWorker.controller && location.reload();
-        sw.active.postMessage({ type: 'webfoundry-register-tab', tabId: sessionStorage.webfoundryTabId });
+        await navigator.serviceWorker.ready;
+        if (!navigator.serviceWorker.controller) return location.reload();
+        let register = () => navigator.serviceWorker.controller.postMessage({ type:'webfoundry-register-tab', tabId: sessionStorage.webfoundryTabId });
+        navigator.serviceWorker.addEventListener('controllerchange', register);
+        setInterval(register, 1000);
+        register();
       }
       await post('event.init');
       await post('broadcast.init');

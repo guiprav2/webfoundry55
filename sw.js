@@ -1,5 +1,19 @@
-let tabs = {};
-self.addEventListener('message', ({ source, data }) => data.type === 'webfoundry-register-tab' && (tabs[data.tabId] = source.id));
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', ev => ev.waitUntil(self.clients.claim()));
+async function storeTab(tabId, clientId) {
+  let cache = await caches.open('webfoundry-tabs');
+  await cache.put(tabId, new Response(clientId));
+}
+async function getTab(tabId) {
+  let cache = await caches.open('webfoundry-tabs');
+  let res = await cache.match(tabId);
+  return res && await res.text();
+}
+self.addEventListener('message', async ev => {
+  let { data } = ev;
+  if (data.type !== 'webfoundry-register-tab') return;
+  await storeTab(data.tabId, ev.source.id);
+});
 self.addEventListener('fetch', event => {
   let url = new URL(event.request.url);
   let pathname = url.pathname;
@@ -16,17 +30,15 @@ self.addEventListener('fetch', event => {
   if (!tabId) return;
   event.respondWith(new Promise(async (resolve, reject) => {
     let channel = new MessageChannel();
-    let timeout = setTimeout(() => reject(new Error('Timed out')), 30000);
+    let timeout = setTimeout(() => reject(new Error('Request timeout')), 30000);
     channel.port1.onmessage = e => {
       clearTimeout(timeout);
       let { status, error, data } = e.data || {};
       if (error) return resolve(new Response(error, { status }));
       resolve(new Response(data, { status }));
     };
-    let clientId = tabs[tabId];
-    if (!clientId) return reject(new Error('Client ID not registered'));
-    let client = await self.clients.get(clientId);
-    if (!client) return reject(new Error('Client not found'));
+    let client = await self.clients.get(await getTab(tabId));
+    if (!client) { return resolve(new Response('Client not registered', { status: 503 })) }
     client.postMessage({ type: 'fetch', project, path }, [channel.port2]);
   }).catch(err => new Response(err.message, { status: 503 })));
 });
