@@ -110,7 +110,8 @@ export default class Designer {
     mousedown: async ev => {
       this.state.current.el.focus();
       ev.preventDefault();
-      await post('designer.changeSelection', 'master', [ev.target]);
+      if (!location.pathname.startsWith('/collab.html')) await post('designer.changeSelection', 'master', [ev.target]);
+      else state.collab.rtc.send({ type: 'changeSelection', s: [ev.target.getAttribute('data-htmlsnap')] });
     },
 
     dblclick: async ev => {
@@ -125,11 +126,12 @@ export default class Designer {
       }
       let key = ev.key;
       if (ev.ctrlKey) key = `Ctrl-${key}`;
-      let cmd = [...Object.values(actions)].find(x => arrayify(x.shortcut).includes(key));
+      let [k, cmd] = [...Object.entries(actions)].find(kv => arrayify(kv[1].shortcut).includes(key));
       if (!cmd || (cmd.condition && !cmd.condition())) return;
       ev.preventDefault();
       ev.stopPropagation();
-      await cmd.handler();
+      if (!location.pathname.startsWith('/collab.html')) await cmd.handler();
+      else state.collab.rtc.send({ type: 'cmd', k });
     },
 
     changeSelection: (cur, s) => {
@@ -156,7 +158,8 @@ export default class Designer {
         let ovs = (frame.overlays[k] ??= []);
         while (ids.length > ovs.length) {
           let i = ovs.length;
-          let o = d.el('div', { class: 'hidden border border-blue-400 z-10 pointer-events-none' });
+          let p = state.collab.rtc?.presence?.find?.(x => x.user === k);
+          let o = d.el('div', { class: ['hidden border z-10 pointer-events-none', () => !p ? 'border-blue-400' : `border-${p.color}`] });
           document.body.append(o);
           ovs.push(new Boo(o, () => frame.map.get(frame.cursors[k][i]), {
             transitionClass: 'transition-all',

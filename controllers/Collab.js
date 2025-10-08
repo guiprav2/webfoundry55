@@ -1,5 +1,6 @@
 import * as pako from 'https://esm.sh/pako';
 import RealtimeCollab from '../other/RealtimeCollab.js';
+import actions from '../other/actions.js';
 import morphdom from 'https://esm.sh/morphdom';
 import rfiles from '../repos/rfiles.js';
 
@@ -29,6 +30,8 @@ export default class Collab {
       this.state.rtc = rtc;
       rtc.events.on('presence:join', async () => await post('collab.sync'));
       rtc.events.on('rpc:*', async ev => await post('collab.rpcInvoke', ev));
+      rtc.events.on('changeSelection', async ev => await post('designer.changeSelection', ev.peer, ev.s.map(x => state.designer.current.map.get(x))));
+      rtc.events.on('cmd', async ev => actions[ev.k].handler({ uid: ev.peer }));
     },
 
     stop: () => {
