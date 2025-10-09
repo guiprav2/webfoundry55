@@ -20,7 +20,7 @@ export default class Designer {
       let frame = this.list.find(x => x.path === path);
       let [name, uuid] = state.projects.current.split(':');
       if (frame.preview) path = path.slice('pages/'.length);
-      return `/${frame.preview ? 'preview' : 'files'}/${name}:${uuid}/${path}?webfoundryTabId=${sessionStorage.webfoundryTabId}`;
+      return `/${frame.preview ? 'preview' : 'files'}/${sessionStorage.webfoundryTabId}/${name}:${uuid}/${path}`;
     },
 
     get current() { return this.list.find(x => x.path === state.files.current) },

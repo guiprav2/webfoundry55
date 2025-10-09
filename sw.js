@@ -22,12 +22,10 @@ self.addEventListener('fetch', event => {
   else if (pathname.startsWith('/preview/')) prefix = '/preview/';
   else return;
   let parts = pathname.slice(prefix.length).split('/');
+  let tabId = parts.shift();
   let project = parts.shift();
   let isPreview = prefix === '/preview/';
   let path = isPreview && pathname.endsWith('.html') ? 'index.html' : parts.join('/');
-  let ref = event.request.referrer ? new URL(event.request.referrer) : null;
-  let tabId = url.searchParams.get('webfoundryTabId') || ref && ref.searchParams.get('webfoundryTabId');
-  if (!tabId) return;
   event.respondWith(new Promise(async (resolve, reject) => {
     let channel = new MessageChannel();
     let timeout = setTimeout(() => reject(new Error('Request timeout')), 30000);
